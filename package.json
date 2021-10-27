@@ -1,0 +1,22 @@
+{
+    "name": "serviciopeliculas",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/manuemendoza/servicioPeliculas.git"
+    },
+    "author": "Manuel Mendoza",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/manuemendoza/servicioPeliculas/issues"
+    },
+    "homepage": "https://github.com/manuemendoza/servicioPeliculas#readme",
+    "dependencies": {
+        "express": "^4.17.1"
+    }
+}
