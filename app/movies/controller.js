@@ -1,34 +1,51 @@
-const Movie = require('./model.js');
-// const filtraPeliculas = (laBusqueda) =>
-//     peliculas.filter((filtrado) =>
-//         filtrado.toLocaleLowerCase().includes(laBusqueda.toLocaleLowerCase()) == true);
+const Movie = require('./model.js')
 
-// module.exports.getMovies = (req, res) => {
-//     if (req.query.title) {
-//         res.json({ movie: filtraPeliculas(req.query.title) });
-//     } else {
-//         res.json({
-//             movie: peliculas
-//         });
-//     }
-// };
-// module.exports.getMovie = (req, res) => res.json({
-//     movie: peliculas[req.params.id]
-// });
+const getMovies = async(req, res) => {
+    if (req.query.title) {
+        const movies = await Movie.find({ title: req.query.title });
+        res.json({
+            movies: movies
+        });
+    } else {
+        res.json({
+            movies: await Movie.find()
+        });
+    }
+};
 
-// module.exports.postMovie = (req, res) => {
-//     const pelicula = (req.body.movie);
-//     peliculas.push(pelicula);
-//     res.json({
-//         movie: peliculas
-//     });
-// };
+const getMovie = async(req, res) => res.json({
+    movie: await Movie.findById(req.params.id)
+});
 
-// module.exports.putMovies = (req, res) => {
-//     const palabra = (req.body.movie);
-//     const posicion = peliculas.indexOf(palabra);
-//     peliculas[posicion] = (req.body.new);
-//     res.json({
-//         newFilm: peliculas
-//     });
-// };
+const createMovie = async(req, res) => {
+    const movie = new Movie(req.body);
+    try {
+        await movie.save();
+        res.json(movie);
+    } catch (error) {
+        res.json(err => console.error('No se ha guardado en la base de dato', err))
+    }
+
+};
+
+const updateMovie = async(req, res) => {
+    const movie = await Movie.findByIdAndUpdate(req.params.id, req.body);
+    res.json({
+        movie: await Movie.findById(req.params.id)
+    });
+};
+
+const deleteMovie = async(req, res) => {
+    const movie = await Movie.findByIdAndDelete(req.params.id)
+    res.json({
+        delete: movie
+    });
+};
+
+module.exports = {
+    getMovie,
+    getMovies,
+    createMovie,
+    updateMovie,
+    deleteMovie
+};
