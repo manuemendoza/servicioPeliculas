@@ -6,12 +6,15 @@ const MovieSchema = mongoose.Schema({
     },
     year: {
         type: Number,
+        require: true
     },
     genre: {
-        type: String
+        type: String,
+        require: true
     },
     actor: {
         type: String,
+        require:true
     },
 })
 
