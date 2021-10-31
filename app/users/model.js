@@ -3,26 +3,23 @@ const mongoose = require('mongoose');
 const UsersSchema = mongoose.Schema({
     name: {
         type: String,
-        require: true
+        required: true
     },
     surname: {
         type: String,
-        require: true
+        required: true
     },
     password: {
         type: String,
-        min: 8,
-        max: 20,
-        require: true,
+        required: true,
     },
     email: {
         type: String,
         trim: true,
         lowercase: true,
         unique: true,
-        require: true,
+        required: true,
         match: /^[-\w.%+]{1,64}@(?:[A-Z0-9-]{1,63}\.){1,125}[A-Z]{2,63}$/i,
-
     }
 });
 
