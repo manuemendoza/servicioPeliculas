@@ -1,21 +1,43 @@
+const express = require('express');
 const Movie = require('./model.js')
 
-const getMovies = async(req, res) => {
-    if (req.query.title) {
-        const movies = await Movie.find({ title: req.query.title });
+const getMovie = async(req, res) => {
+    try {
+        const movie = await Movie.findById(req.params.id)
+        if (movie) {
+            res.json(movie);
+        } else {
+            res.json('Introduzac un correcto id');
+        }
+    } catch (error) {
+        console.error(error);
         res.json({
-            movies: movies
-        });
-    } else {
-        res.json({
-            movies: await Movie.find()
-        });
+            message: error.message
+        }, 500);
     }
 };
 
-const getMovie = async(req, res) => res.json({
-    movie: await Movie.findById(req.params.id)
-});
+const getMovies = async(req, res) => {
+    let filter = {};
+    if (req.query.title) {
+        filter.title = { $regex: new RegExp(req.query.title, 'i') };
+    }
+    if (req.query.genres) {
+        filter.genres = { $regex: new RegExp(req.query.genres, 'i') };
+    }
+    if (req.query.actors) {
+        filter.actors = { $regex: new RegExp(req.query.actors, 'i') };
+    }
+    try {
+        const movies = await Movie.find(filter);
+        res.json({ movies });
+    } catch (error) {
+        console.error(error);
+        res.json({
+            message: error.message
+        }, 500);
+    }
+};
 
 const createMovie = async(req, res) => {
     const movie = new Movie(req.body);
@@ -23,23 +45,51 @@ const createMovie = async(req, res) => {
         await movie.save();
         res.json(movie);
     } catch (error) {
-        res.json(err => console.error('No se ha guardado en la base de dato', err))
+        console.error(error);
+        if (error.name == "ValidationError") {
+            res.json({
+                menssage: error.message
+            }, 400);
+        } else {
+            res.json({
+                message: error.message
+            }, 500);
+        }
     }
-
 };
 
 const updateMovie = async(req, res) => {
-    const movie = await Movie.findByIdAndUpdate(req.params.id, req.body);
-    res.json({
-        movie: await Movie.findById(req.params.id)
-    });
+    try {
+        const movie = await Movie.findById(req.params.id);
+        if (movie) {
+            const movieUpdate = await Movie.findByIdAndUpdate(movie, req.body);
+            res.json(movieUpdate);
+        } else {
+            res.json('Introduzac un correcto id');
+        }
+    } catch (error) {
+        res.json({
+            message: error.message
+        }, 500);
+    }
 };
 
 const deleteMovie = async(req, res) => {
-    const movie = await Movie.findByIdAndDelete(req.params.id)
-    res.json({
-        delete: movie
-    });
+    try {
+        const movie = Movie.findById(req.params.id)
+        if (movie) {
+            const movie = await Movie.findByIdAndDelete(movie);
+            res.json({
+                delete: movie
+            });
+        } else {
+            res.json('Introduzac un correcto id');
+        }
+    } catch (error) {
+        res.json({
+            message: error.message
+        }, 500);
+    }
 };
 
 module.exports = {
