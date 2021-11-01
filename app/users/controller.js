@@ -3,41 +3,69 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 
 const getUsers = async(req, res) => {
-    if (req.query.name) {
-        const users = await User.find({ name: { $regex: new RegExp(req.query.name, 'i') } });
+    try {
+        if (req.query.name) {
+            const users = await User.find({ name: { $regex: new RegExp(req.query.name, 'i') } });
+            res.json({
+                user: users
+            });
+        } else {
+            res.json({
+                users: await User.find()
+            });
+        }
+    } catch (error) {
+        console.error(error);
         res.json({
-            user: users
-        });
-    } else {
-        res.json({
-            users: await User.find()
-        });
+            message: error.message
+        }, 500);
     }
 };
 
-const getUser = async(req, res) => res.json({
-    movie: await User.findById(req.params.id)
-});
+const getUser = async(req, res) => {
+    try {
+        const movie = await User.findById(req.params.id)
+        if (movie) {
+            res.json(movie);
+        } else {
+            res.json({
+                message: 'user not found'
+            }, 404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.json({
+            message: error.message
+        }, 500);
+    }
+}
 
 const createUser = async(req, res) => {
-    const salt = bcrypt.genSaltSync(15);
-    const user = new User(req.body);
-    user.token = null
     if (!req.body.password) {
         res.json({
-            message: 'Password is required'
+            message: 'password is required'
         }, 400);
     } else {
+        const user = new User(req.body);
+
+        const salt = bcrypt.genSaltSync(15);
         const hash = bcrypt.hashSync(req.body.password, salt);
         user.password = hash;
+
         try {
             await user.save();
             res.json(user);
         } catch (error) {
             console.error(error);
-            res.json({
-                message: error.message
-            }, 400);
+            if (error.message == "ValidationError") {
+                res.json({
+                    message: error.message
+                }, 400);
+            } else {
+                res.json({
+                    message: error.message
+                }, 500);
+            }
         }
     }
 
@@ -46,13 +74,13 @@ const createUser = async(req, res) => {
 const loginUser = async(req, res) => {
     if (!req.body.email || !req.body.password) {
         res.json({
-            message: "El usuario o cantraseña no son correctos"
+            message: "invalid user or password"
         }, 400);
     } else {
         const user = await User.findOne({ email: req.body.email });
         if (!user) {
             res.json({
-                message: "El usuario o cantraseña no son correctos"
+                message: "invalid user or password"
             }, 400);
         } else {
             try {
@@ -67,33 +95,63 @@ const loginUser = async(req, res) => {
                     res.json(token);
                 } else {
                     res.json({
-                        message: "El usuario o cantraseña no son correctos"
+                        message: "invalid user or password"
                     }, 400);
                 }
             } catch (error) {
                 console.error(error);
                 res.json({
                     message: error.message
-                }, 400);
+                }, 500);
             }
         }
     }
 }
 
 const updateUser = async(req, res) => {
-    let data = req.body;
-    delete data.token;
-    const user = await User.findByIdAndUpdate(req.params.id, data);
-    res.json({
-        user: await User.findById(req.params.id)
-    });
+    try {
+        const user = User.findById(req.params.id);
+        if (user) {
+            let data = req.body;
+            if (req.body.password) {
+                const salt = bcrypt.genSaltSync(15);
+                const hash = bcrypt.hashSync(req.body.password, salt);
+                data.password = hash;
+            }
+            const userUpdate = await User.findByIdAndUpdate(req.params.id, data, { new: true });
+            res.json(userUpdate);
+        } else {
+            res.json({
+                message: 'user not found'
+            }, 404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.json({
+            message: error.message
+        }, 500);
+    }
 };
 
 const deleteUser = async(req, res) => {
-    const user = await User.findByIdAndDelete(req.params.id)
-    res.json({
-        delete: user
-    });
+    const user = User.findById(req.params.id);
+    try {
+        if (user) {
+            const userDelete = await User.findByIdAndDelete(req.params.id);
+            res.json({
+                message: 'user deleted'
+            });
+        } else {
+            res.json({
+                message: 'user not found'
+            }, 404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.json({
+            message: error.message
+        }, 500);
+    }
 };
 
 
