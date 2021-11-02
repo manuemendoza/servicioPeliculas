@@ -46,6 +46,12 @@ const createUser = async(req, res) => {
             message: 'password is required'
         }, 400);
     } else {
+        let data = req.body;
+
+        if (!req.token || req.token.role == 'user') {
+            delete data.role;
+        }
+
         const user = new User(req.body);
 
         const salt = bcrypt.genSaltSync(15);
@@ -88,7 +94,7 @@ const loginUser = async(req, res) => {
                 if (validated) {
                     const token = jwt.sign({
                         _id: user._id,
-                        email: user.email
+                        role: user.role
                     }, process.env.PRIVATE_KEY, {
                         expiresIn: '1h'
                     });
@@ -110,14 +116,20 @@ const loginUser = async(req, res) => {
 
 const updateUser = async(req, res) => {
     try {
-        const user = User.findById(req.params.id);
+        const user = await User.findById(req.params.id);
         if (user) {
             let data = req.body;
+
+            if (!req.token || req.token.role == 'user') {
+                delete data.role;
+            }
+
             if (req.body.password) {
                 const salt = bcrypt.genSaltSync(15);
                 const hash = bcrypt.hashSync(req.body.password, salt);
                 data.password = hash;
             }
+
             const userUpdate = await User.findByIdAndUpdate(req.params.id, data, { new: true });
             res.json(userUpdate);
         } else {
@@ -126,6 +138,7 @@ const updateUser = async(req, res) => {
             }, 404);
         }
     } catch (error) {
+        // @TODO: validate ¬¬
         console.error(error);
         res.json({
             message: error.message
@@ -134,8 +147,8 @@ const updateUser = async(req, res) => {
 };
 
 const deleteUser = async(req, res) => {
-    const user = User.findById(req.params.id);
     try {
+        const user = await User.findById(req.params.id);
         if (user) {
             const userDelete = await User.findByIdAndDelete(req.params.id);
             res.json({

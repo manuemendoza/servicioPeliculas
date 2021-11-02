@@ -7,7 +7,9 @@ const getMovie = async(req, res) => {
         if (movie) {
             res.json(movie);
         } else {
-            res.json('Introduzac un correcto id');
+            res.json({
+                message: "movie not found"
+            }, 404);
         }
     } catch (error) {
         console.error(error);
@@ -62,12 +64,15 @@ const updateMovie = async(req, res) => {
     try {
         const movie = await Movie.findById(req.params.id);
         if (movie) {
-            const movieUpdate = await Movie.findByIdAndUpdate(movie, req.body);
+            const movieUpdate = await Movie.findByIdAndUpdate(req.params.id, req.body, { new: true });
             res.json(movieUpdate);
         } else {
-            res.json('Introduzac un correcto id');
+            res.json({
+                message: "movie not found"
+            }, 404);
         }
     } catch (error) {
+        // @TODO: validate ¬¬
         res.json({
             message: error.message
         }, 500);
@@ -76,16 +81,19 @@ const updateMovie = async(req, res) => {
 
 const deleteMovie = async(req, res) => {
     try {
-        const movie = Movie.findById(req.params.id)
+        const movie = await Movie.findById(req.params.id)
         if (movie) {
-            const movie = await Movie.findByIdAndDelete(movie);
+            const movie = await Movie.findByIdAndDelete(req.params.id);
             res.json({
-                delete: movie
+                message: 'movie deleted'
             });
         } else {
-            res.json('Introduzac un correcto id');
+            res.json({
+                message: "movie not found"
+            }, 404);
         }
     } catch (error) {
+        // @TODO: validate ¬¬
         res.json({
             message: error.message
         }, 500);
