@@ -11,14 +11,17 @@ const checkToken = (req, res, next, requiredRole) => {
     }
 
     if (token) {
+        let userToken = jwt.verify(token, process.env.PRIVATE_KEY);
         try {
-            let userToken = jwt.verify(token, process.env.PRIVATE_KEY);
-            if (requiredRole === 'user' ||
-                userToken.role === 'admin' ||
+            console.log(userToken.role);
+            if (requiredRole == 'user' ||
+                userToken.role == 'admin' ||
                 (req.path.startsWith('/users') && req.params.id === userToken._id) // perfil del propio usuario autenticado
             ) {
-                req.token = decoded;
+                req.token = userToken;
+                console.log(userToken);
                 next();
+
             } else {
                 res.json({
                     message: 'user not authorized'
@@ -26,7 +29,7 @@ const checkToken = (req, res, next, requiredRole) => {
             }
         } catch (error) {
             res.json({
-                message: 'user not authenticated'
+                message: 'user not authenticated que te peines'
             }, 401);
         }
     } else {

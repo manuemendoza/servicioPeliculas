@@ -72,10 +72,16 @@ const updateMovie = async(req, res) => {
             }, 404);
         }
     } catch (error) {
-        // @TODO: validate ¬¬
-        res.json({
-            message: error.message
-        }, 500);
+        console.error(error);
+        if (error.name == "ValidationError") {
+            res.json({
+                menssage: error.message
+            }, 400);
+        } else {
+            res.json({
+                message: error.message
+            }, 500);
+        }
     }
 };
 
@@ -93,7 +99,6 @@ const deleteMovie = async(req, res) => {
             }, 404);
         }
     } catch (error) {
-        // @TODO: validate ¬¬
         res.json({
             message: error.message
         }, 500);

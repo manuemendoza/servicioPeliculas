@@ -96,7 +96,7 @@ const loginUser = async(req, res) => {
                         _id: user._id,
                         role: user.role
                     }, process.env.PRIVATE_KEY, {
-                        expiresIn: '1h'
+                        expiresIn: '4h'
                     });
                     res.json(token);
                 } else {
@@ -138,11 +138,16 @@ const updateUser = async(req, res) => {
             }, 404);
         }
     } catch (error) {
-        // @TODO: validate ¬¬
         console.error(error);
-        res.json({
-            message: error.message
-        }, 500);
+        if (error.name == "ValidationError") {
+            res.json({
+                menssage: error.message
+            }, 400);
+        } else {
+            res.json({
+                message: error.message
+            }, 500);
+        }
     }
 };
 
