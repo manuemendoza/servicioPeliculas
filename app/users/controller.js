@@ -1,6 +1,6 @@
 const User = require('./model.js');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 
 const getUsers = async(req, res) => {
     try {
@@ -24,9 +24,9 @@ const getUsers = async(req, res) => {
 
 const getUser = async(req, res) => {
     try {
-        const movie = await User.findById(req.params.id)
-        if (movie) {
-            res.json(movie);
+        const user = await User.findById(req.params.id)
+        if (user) {
+            res.json(user);
         } else {
             res.json({
                 message: 'user not found'
